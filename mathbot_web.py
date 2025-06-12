@@ -125,5 +125,5 @@ if submitted:
 # --- FOOTER ---
 st.markdown("""
 <hr style='border-top: 1px solid gray;'>
-<p style='text-align: center; font-size: 0.9em;'>Built by Mukhammadaziz 💡 | Gen Z Math Game Strong 💪</p>
+<p style='text-align: center; font-size: 0.9em;'>Built by Mukhammadaziz 💡 | More Improvements coming soon!💪</p>
 """, unsafe_allow_html=True)
