@@ -107,4 +107,4 @@ if submit:
 
 # Footer
 st.markdown("---")
-st.markdown("<p style='text-align: center; font-size: 0.9em;'>Made by Mukhammadaziz ⚙️</p>", unsafe_allow_html=True)
+st.markdown("<p style='text-align: center; font-size: 0.9em;'>Created By: Mukhammadaziz Mamurjonov ⚙️</p>", unsafe_allow_html=True)
