@@ -2,16 +2,33 @@ import streamlit as st
 from sympy import symbols, Eq, solve, simplify, factor, expand, integrate, diff, sympify
 from sympy.parsing.sympy_parser import parse_expr
 
-x, y = symbols('x y')
+# Define symbols (more generic)
+x, y, z = symbols('x y z')
 
-# Configure page
+# --- PAGE CONFIG ---
 st.set_page_config(
-    page_title="MathBot 🤖🧠",
+    page_title="MathBot 🚀",
     layout="centered",
     initial_sidebar_state="collapsed"
 )
 
-# Auto task detection
+# --- MODERN UI ---
+st.markdown("""
+    <style>
+        .main { background-color: #1e1e1e; color: white; }
+        .block-container { padding-top: 2rem; }
+        textarea, .stTextInput>div>div>input { background-color: #333; color: white; }
+        .stButton button { background-color: #4CAF50; color: white; font-weight: bold; border-radius: 10px; }
+    </style>
+""", unsafe_allow_html=True)
+
+st.markdown("""
+<h1 style='text-align: center;'>📐 MathBot 2.0</h1>
+<p style='text-align: center;'>Drop any math problem. I’ll handle the rest 🧠</p>
+<hr style='border-top: 1px solid gray;'>
+""", unsafe_allow_html=True)
+
+# --- TASK DETECTION ---
 def guess_task(expr):
     expr = expr.lower()
     if any(k in expr for k in ['derivative', 'differentiate']):
@@ -33,78 +50,80 @@ def guess_task(expr):
     else:
         return 'unknown'
 
-# Process math logic
+# --- MATH ENGINE ---
 def process_input(user_input):
     try:
         task = guess_task(user_input)
+        expr = user_input.lower().replace('^', '**')
 
         if task == 'derivative':
-            expr = user_input.replace('derivative of', '').replace('differentiate', '').strip().replace('^', '**')
+            expr = expr.replace('derivative of', '').replace('differentiate', '').strip()
             return f"📉 Derivative: {diff(sympify(expr))}"
 
         elif task == 'integral':
-            expr = user_input.replace('integral of', '').replace('integrate', '').strip().replace('^', '**')
+            expr = expr.replace('integral of', '').replace('integrate', '').strip()
             return f"📈 Integral: {integrate(sympify(expr))} + C"
 
         elif task == 'solve':
-            expr = user_input.replace('solve', '').strip().replace('^', '**')
-            lhs, rhs = expr.split('=')
-            equation = Eq(parse_expr(lhs), parse_expr(rhs))
-            return f"🧠 Solution: {solve(equation)}"
+            expr = expr.replace('solve', '').strip()
+            if '=' in expr:
+                lhs, rhs = expr.split('=')
+                equation = Eq(parse_expr(lhs), parse_expr(rhs))
+                return f"🧠 Solution: {solve(equation)}"
+            else:
+                return f"🧠 Roots: {solve(parse_expr(expr))}"
 
         elif task == 'factor':
-            expr = user_input.replace('factor', '').strip().replace('^', '**')
+            expr = expr.replace('factor', '').strip()
             return f"🧩 Factored: {factor(sympify(expr))}"
 
         elif task == 'expand':
-            expr = user_input.replace('expand', '').strip().replace('^', '**')
+            expr = expr.replace('expand', '').strip()
             return f"📂 Expanded: {expand(sympify(expr))}"
 
         elif task == 'simplify':
-            expr = user_input.replace('simplify', '').strip().replace('^', '**')
+            expr = expr.replace('simplify', '').strip()
             return f"🧹 Simplified: {simplify(sympify(expr))}"
 
         elif task == 'percentage':
-            expr = user_input.replace('%', ' percent').replace('of', '').replace('percent', '').strip()
-            percent, of_value = expr.split()
-            result = float(percent) / 100 * float(of_value)
-            return f"📊 {percent}% of {of_value} = {result}"
+            expr = expr.replace('%', '').replace('percent of', '').replace('of', '').strip()
+            parts = expr.split()
+            if len(parts) >= 2:
+                percent, value = float(parts[0]), float(parts[1])
+                result = percent / 100 * value
+                return f"📊 {percent}% of {value} = {result}"
+            else:
+                return "❌ Invalid percentage format. Use like: 20% of 50"
 
         elif task == 'arithmetic':
-            expr = user_input.replace('×', '*').replace('÷', '/').replace('^', '**')
+            expr = expr.replace('×', '*').replace('÷', '/').replace('^', '**')
             result = eval(expr)
             return f"🧮 Result: {expr} = {result}"
 
         else:
-            return "❓ I couldn't understand that. Try again."
+            return "🤷‍♂️ I couldn’t figure out what you meant. Try being clearer."
 
     except Exception as e:
         return f"⚠️ Error: {str(e)}"
 
-# ---------- UI ----------
+# --- INPUT FORM ---
+with st.form("math_form"):
+    user_input = st.text_area("📥 Enter a math problem:", height=100, placeholder="E.g. solve x^2 + 5x + 6 = 0")
+    submitted = st.form_submit_button("🧠 Calculate")
 
-st.markdown("<h1 style='text-align: center;'>🧠 MathBot Web App</h1>", unsafe_allow_html=True)
-st.markdown("<p style='text-align: center;'>Type in a math problem and I’ll break it down for you 💪</p>", unsafe_allow_html=True)
-st.markdown("---")
-
-# Responsive form
-with st.form(key="math_form"):
-    user_input = st.text_area("📥 Enter your math problem below:", height=100, placeholder="E.g. solve 3x + 5 = 20")
-    submit = st.form_submit_button("🧠 Solve", use_container_width=True)
-
-# Show results
-if submit:
+if submitted:
     if user_input.strip():
-        results = []
+        responses = []
         for line in user_input.strip().splitlines():
-            if line:
-                results.append(f"🗣️ **Input**: `{line}`")
-                results.append(process_input(line))
+            responses.append(f"🔹 **Input:** `{line}`")
+            responses.append(process_input(line))
         st.markdown("---")
-        st.markdown("\n\n".join(results))
+        st.markdown("\n\n".join(responses))
     else:
-        st.warning("Yo, type something first 🤨")
+        st.warning("Yo, type something first 😅")
 
-# Footer
-st.markdown("---")
-st.markdown("<p style='text-align: center; font-size: 0.9em;'>Created By: Mukhammadaziz Mamurjonov ⚙️</p>", unsafe_allow_html=True)
+# --- FOOTER ---
+st.markdown("""
+<hr style='border-top: 1px solid gray;'>
+<p style='text-align: center; font-size: 0.9em;'>Built by Mukhammadaziz 💡 | Gen Z Math Game Strong 💪</p>
+""", unsafe_allow_html=True)
